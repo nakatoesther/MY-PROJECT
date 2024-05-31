@@ -19,7 +19,7 @@ model = pickle.load(open('./models/sv_model.pkl','rb'))  # The scaler fitted on 
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
-GOOGLE_CLIENT_ID = "65661065576-ln9v26nun2nnoub3ko98l637t2lte86j.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "201085600669-pub3ikbrtvic656pv4hho0udg6qjvtbt.apps.googleusercontent.com"
 client_secrets_file = os.path.join(pathlib.Path(__file__).parent, "client_secret.json")
 
 flow = Flow.from_client_secrets_file(
