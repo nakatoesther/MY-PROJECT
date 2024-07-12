@@ -4,6 +4,7 @@ import pathlib
 import requests
 from flask import Flask, session, abort, redirect, request, render_template
 import math
+import mysql.connector
 import pickle
 import numpy as np
 from google.oauth2 import id_token
@@ -111,8 +112,72 @@ def prediction_():
     # Predict using the trained classifier
     y_pred = model.predict(array_numpy_features)
     print("Predicted values for new user input data:", y_pred)
+    r_string=y_pred[0]
+    save_to_db(str(session['name']), int_features, str(r_string))
 
     return render_template("heart_pred.html" ,prediction=f'Prediction : {y_pred[0]}')
+
+
+
+def save_to_db(user_email,features, p_result):
+    # Establish the connection
+    connection = mysql.connector.connect(
+        host='localhost',  # Hostname of the MySQL server
+        user='root',  # Your MySQL username
+        database='heart_db'  # Name of the database you want to connect to
+    )
+
+    # Create a cursor object
+    cursor = connection.cursor()
+
+    # Insert into MySQL table
+    cursor = connection.cursor()
+    insert_query = """
+        INSERT INTO prediction_history 
+        (gender, age, education, current_smoker, cigs_per_day, BP_meds, prevalent_stroke, prevalent_hyp, diabetes, 
+         tot_chol, sys_BP, dia_BP, BMI, heart_rate, glucose, predicted_value,user_email)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s)
+    """
+    cursor.execute(insert_query, (*features, p_result,str(user_email),))
+
+    # Commit the transaction
+    connection.commit()
+
+    # Close the cursor and connection
+    cursor.close()
+    connection.close()
+
+
+
+
+@app.route("/history")
+def history():
+    # Establish the connection
+    connection = mysql.connector.connect(
+        host='localhost',  # Hostname of the MySQL server
+        user='root',  # Your MySQL username
+        database='heart_db'  # Name of the database you want to connect to
+    )
+
+    # Create a cursor object
+    cursor = connection.cursor()
+
+    # Execute a query (corrected to use proper string formatting)
+    user_email = session['name']
+    query = f"SELECT * FROM prediction_history  WHERE user_email = '{user_email}'"
+    cursor.execute(query)
+    # Fetch the results
+    results = cursor.fetchall()
+
+    # Close the cursor and connection
+    cursor.close()
+    connection.close()
+
+    return render_template("History.html", results=results, User='Hi, {}'.format(session['name']))
+
+
+
+
 
 
 
